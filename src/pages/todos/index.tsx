@@ -8,6 +8,8 @@ import { api } from "~/utils/api";
 const CreateTodoWizzard = () => {
   const [input, setInput] = useState("");
 
+  const { mutate, isLoading } = api.todo.create.useMutation();
+
   return (
     <div className="flex h-16 justify-center gap-5">
       <input
@@ -21,6 +23,7 @@ const CreateTodoWizzard = () => {
       <button
         type="button"
         className="inline-flex h-16 items-center rounded-lg bg-blue-700 px-5 py-2 text-center text-lg font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+        onClick={() => mutate({ todoText: input })}
       >
         Add
       </button>
