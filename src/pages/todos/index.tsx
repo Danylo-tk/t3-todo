@@ -33,6 +33,7 @@ const CreateTodoWizzard = () => {
 
 const TodosFeed = () => {
   const { data, isLoading } = api.todo.getAll.useQuery();
+  const { mutate } = api.todo.delete.useMutation();
 
   if (isLoading) return <LoadingPage />;
 
@@ -43,11 +44,17 @@ const TodosFeed = () => {
       {data.map((todo) => (
         <div
           key={todo.id}
-          className="block w-full rounded-lg border border-gray-200 bg-white p-6 shadow hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700"
+          className="flex w-full justify-between rounded-lg border border-gray-200 bg-white p-6 shadow hover:bg-gray-100"
         >
           <p className="font-normal text-gray-700 dark:text-gray-400">
             {todo.todoText}
           </p>
+          <button
+            className="boder-solid border border-red-400 p-2"
+            onClick={() => mutate({ todoId: todo.id })}
+          >
+            del
+          </button>
         </div>
       ))}
     </div>
