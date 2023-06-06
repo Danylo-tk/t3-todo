@@ -14,7 +14,7 @@ export const todoRouter = createTRPCRouter({
   }),
 
   create: privateProcedure
-    .input(z.object({ todoText: z.string().min(1).max(255) }))
+    .input(z.object({ todoText: z.string().min(1).max(600) }))
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.userId;
 

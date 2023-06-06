@@ -12,7 +12,8 @@ model Todo {
     id        String    @id @default(cuid())
     createdAt DateTime  @default(now())
 
-    todoText  String    @db.VarChar(255)
+    todoText  String    @db.VarChar(600)
+    isDone    Boolean   @default(false)
     userId    String
 
     @@index([userId])

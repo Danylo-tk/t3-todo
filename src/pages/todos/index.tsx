@@ -1,4 +1,4 @@
-import { useUser } from "@clerk/nextjs";
+import { SignOutButton, useUser } from "@clerk/nextjs";
 import type { NextPage } from "next";
 import Image from "next/image";
 import { useState } from "react";
@@ -22,7 +22,7 @@ const CreateTodoWizzard = () => {
       <input
         type="text"
         placeholder="Enter your todo"
-        className="h-full w-96 rounded-lg border border-solid border-black p-2 text-lg focus:outline-none"
+        className="h-full w-96 rounded-lg border border-solid border-gray-700 bg-gray-800 p-2 text-lg text-white focus:outline-none"
         value={input}
         onChange={(e) => setInput(e.target.value)}
         onKeyDown={(e) => {
@@ -68,6 +68,7 @@ interface TodoProps {
   todo: {
     id: string;
     todoText: string;
+    isDone: boolean;
   };
 }
 
@@ -85,31 +86,47 @@ const Todo = ({ todo }: TodoProps) => {
     });
   const { mutate: updateTodo } = api.todo.update.useMutation();
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setTodoText(e.target.value);
   };
 
   return (
-    <div
-      key={todo.id}
-      className="w-full rounded-lg border border-gray-200 bg-white p-6 shadow"
-    >
+    <div key={todo.id}>
       {isEditedTodo ? (
-        <div className="flex gap-4">
-          <input
-            type="text"
-            autoFocus
-            value={todoText}
-            onChange={handleInputChange}
-            className="w-full outline-none"
-          />
-          <div className="flex gap-2">
-            <button
-              className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-200 px-5 py-2 text-center text-lg font-medium text-white hover:bg-blue-300 focus:outline-none focus:ring-4 focus:ring-blue-300"
-              onClick={() => {
-                setIsEditTodo(false);
-                updateTodo({ todoId: todo.id, newTodoText: todoText });
+        <div className="flex gap-2">
+          <div className="h-40 w-full rounded-lg border border-gray-700 bg-gray-800 p-4 font-normal text-white shadow">
+            <textarea
+              autoFocus
+              value={todoText}
+              onChange={handleInputChange}
+              rows={5}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  if (todoText !== "") {
+                    setIsEditTodo(false);
+                    updateTodo({ todoId: todo.id, newTodoText: todoText });
+                  } else {
+                    deleteTodo({ todoId: todo.id });
+                  }
+                }
               }}
+              className="w-full resize-none bg-gray-800 text-white outline-none"
+            />
+          </div>
+          <div className="flex flex-col items-center justify-around">
+            <button
+              type="button"
+              onClick={() => {
+                if (todoText !== "") {
+                  setIsEditTodo(false);
+                  updateTodo({ todoId: todo.id, newTodoText: todoText });
+                } else {
+                  deleteTodo({ todoId: todo.id });
+                }
+              }}
+              disabled={isDeleting}
+              className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-200 px-5 py-2 text-center text-lg font-medium text-white hover:bg-blue-300 focus:outline-none focus:ring-4 focus:ring-blue-300"
             >
               ✏️
             </button>
@@ -119,6 +136,7 @@ const Todo = ({ todo }: TodoProps) => {
               </div>
             ) : (
               <button
+                type="button"
                 className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-700 px-5 py-2 text-center text-lg font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300"
                 onClick={() => deleteTodo({ todoId: todo.id })}
               >
@@ -128,17 +146,18 @@ const Todo = ({ todo }: TodoProps) => {
           </div>
         </div>
       ) : (
-        <div className="flex items-center justify-between">
-          <p className="font-normal text-gray-700 dark:text-gray-400">
+        <div className="flex items-center justify-between gap-2">
+          <p className="${isDone ? } h-40 w-full overflow-scroll rounded-lg border border-gray-700 bg-gray-800 p-4 font-normal text-white shadow">
             {todoText}
           </p>
-          <div className="flex gap-2">
+          <div className="flex h-40 flex-col justify-around">
             <button
               type="button"
-              className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-700 px-5 py-2 text-center text-lg font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300"
               onClick={() => {
                 setIsEditTodo(true);
               }}
+              disabled={isDeleting}
+              className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-700 px-5 py-2 text-center text-lg font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300"
             >
               ✏️
             </button>
@@ -185,19 +204,24 @@ const Todos: NextPage = () => {
 
   return (
     <div className="m-auto max-w-lg">
-      <div className="flex gap-3 p-2">
-        <Image
-          src={user.profileImageUrl}
-          alt="Profile picture"
-          className="h-14 w-14 rounded-full"
-          width={56}
-          height={56}
-        />
-        <h1 className="my-auto text-lg">
-          Hello,{" "}
-          <span className="font-bold text-blue-700 ">@{user?.username}</span>,
-          you&apos;ve got a ton of tasks to do!
-        </h1>
+      <div className="flex flex-col gap-3 p-2">
+        <div className="flex gap-3">
+          <Image
+            src={user.profileImageUrl}
+            alt="Profile picture"
+            className="h-14 w-14 rounded-full border border-solid border-white"
+            width={56}
+            height={56}
+          />
+          <h1 className="my-auto text-lg text-white">
+            Hello,{" "}
+            <span className="font-bold text-blue-700 ">@{user?.username}</span>,
+            you&apos;ve got a ton of tasks to do!
+          </h1>
+        </div>
+        <p className="text-white">
+          <SignOutButton />
+        </p>
       </div>
 
       <CreateTodoWizzard />
